@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>亮哥游戏库 · 小苹果乐园</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 顶部栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🍎</span>
+      <div class="brand-text">
+        <h1>亮哥游戏库</h1>
+        <p>小苹果乐园 · 精选正版小游戏</p>
+      </div>
+    </div>
+    <button class="ip-btn" id="ipBtn">🌐 IP检测</button>
+  </header>
+
+  <!-- Banner -->
+  <section class="banner">
+    <div class="banner-bg"></div>
+    <div class="banner-content">
+      <span class="badge">今日推荐</span>
+      <h2>亮哥精选 · 一库畅玩</h2>
+      <p>正规授权 · 官方渠道 · 安全下载</p>
+    </div>
+  </section>
+
+  <!-- 搜索 -->
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="搜索游戏名称…">
+    <button class="search-go">搜索</button>
+  </div>
+
+  <!-- 主体：左侧分类 + 右侧列表 -->
+  <div class="main">
+    <aside class="sidebar" id="sidebar"></aside>
+    <section class="list" id="list"></section>
+  </div>
+
+  <!-- 备案 -->
+  <div class="beian">示例备案号：京ICP备XXXXXXXX号</div>
+
+  <!-- 底部导航 -->
+  <nav class="bottombar">
+    <a class="active">🏠<span>首页</span></a>
+    <a>🏆<span>排行</span></a>
+    <a>❤️<span>收藏</span></a>
+    <a>👤<span>我的</span></a>
+  </nav>
+</div>
+
+<!-- IP检测弹窗 -->
+<div class="modal-mask" id="ipMask">
+  <div class="modal small">
+    <button class="modal-close" id="ipClose">✕</button>
+    <div class="modal-body">
+      <h3>🌐 IP 归属地检测</h3>
+      <p class="ip-line">IP 地址：<b id="ipAddr">—</b></p>
+      <p class="ip-line">归属地：<b id="ipLoc">检测中…</b></p>
+      <p class="ip-tip">（演示数据，接入真实接口需服务端支持）</p>
+    </div>
+  </div
