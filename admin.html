@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · 亮哥游戏库</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .admin-wrap{max-width:1100px;margin:0 auto;padding:16px;}
+  .login-box{max-width:360px;margin:80px auto;background:#1e2233;padding:32px;border-radius:16px;}
+  .login-box h2{margin:0 0 20px;color:#fff;text-align:center;}
+  .login-box input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;background:#2a2f44;color:#fff;}
+  .login-box button{width:100%;padding:12px;margin-top:12px;border:none;border-radius:8px;background:linear-gradient(90deg,#ff7a59,#ff5c8a);color:#fff;font-size:16px;cursor:pointer;}
+  .admin-head{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #2a2f44;margin-bottom:16px;}
+  .admin-head h1{color:#fff;font-size:20px;}
+  .logout{background:#444;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  .stat-card{background:#1e2233;padding:16px;border-radius:12px;color:#fff;}
+  .stat-card b{font-size:24px;color:#ff7a59;}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .tabs button{padding:10px 18px;border:none;border-radius:8px;background:#2a2f44;color:#fff;cursor:pointer;}
+  .tabs button.active{background:linear-gradient(90deg,#ff7a59,#ff5c8a);}
+  .panel{display:none;background:#1e2233;padding:16px;border-radius:12px;}
+  .panel.show{display:block;}
+  .panel h3{color:#fff;margin-top:0;}
+  .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+  .form-row input,.form-row select{flex:1;min-width:120px;padding:10px;border-radius:8px;border:none;background:#2a2f44;color:#fff;}
+  .form-row button{padding:10px 18px;border:none;border-radius:8px;background:#6BCB77;color:#111;cursor:pointer;font-weight:bold;}
+  .form-row button.del{background:#FF6B6B;color:#fff;}
+  table{width:100%;border-collapse:collapse;color:#fff;font-size:13px;}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #2a2f44;}
+  th{color:#ff7a59;}
+  .tag{display:inline-block;background:#2a2f44;padding:2px 8px;border-radius:6px;margin:2px;}
+  .del-link{color:#FF6B6B;cursor:pointer;}
+  .hint{color:#8a90a5;font-size:12px;margin-top:8px;}
+</style>
+</head>
+<body style="background:#14161f;">
+<div id="app">
+
+  <!-- 登录页 -->
+  <div id="loginView">
+    <div class="login-box">
+      <h2>🔒 后台登录</h2>
+      <input id="user" placeholder="账号">
+      <input id="pass" type="password" placeholder="密码">
+      <button onclick="login()">登录</button>
+      <p class="hint" style="color:#8a90a5;text-align:center;">默认：admin / admin123（请上线前修改）</p>
+    </div>
+  </div>
+
+  <!-- 管理页 -->
+  <div id="adminView" style="display:none;" class="admin-wrap">
+    <div class="admin-head">
+      <h1>⚙️ 亮哥游戏库 · 后台管理</h1>
+      <button class="logout" onclick="logout()">退出</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">分类数<b id="statCats">0</b></div>
+      <div class="stat-card">游戏数<b id="statGames">0</b></div>
+      <div class="stat-card">总PV<b id="statPv">0</b></div>
+      <div class="stat-card">总点击<b id="statClicks">0</b></div>
+    </div>
+
+    <div class="tabs">
+      <button class="active" onclick="switchTab('game')">🎲 游戏管理</button>
+      <button onclick="switchTab('cat')">🗂️ 分类管理</button>
+      <button onclick="switchTab('site')">⚙️ 站点设置</button>
+    </div>
+
+    <!-- 游戏管理 -->
+    <div class="panel show" id="tab-game">
+      <h3>➕ 添加 / 编辑游戏</h3>
+      <div class="form-row">
+        <input id="g_title" placeholder="游戏名称">
+        <input id="g_icon" placeholder="图标emoji" style="max-width:90px" value="🎮">
+        <select id="g_cat"></select>
+      </div>
+      <div class="form-row">
+        <input id="g_desc" placeholder="描述">
+        <input id="g_size" placeholder="大小 如 12MB" style="max-width:120px">
+        <input id="g_date" placeholder="日期 2026-08-29">
+        <input id="g_link" placeholder="下载/跳转链接" value="#">
+      </div>
+      <div class="form-row">
+        <input id="g_tags" placeholder="标签(逗号分隔) 如 三消,轻松">
+        <input id="g_plays" placeholder="播放量" type="number" style="max-width:110px" value="0">
+        <button onclick="saveGame()">💾 保存游戏</button>
+      </div>
+      <p class="hint">💡 游戏数量无上限，可任意添加。编辑时先点击下方列表某行填充表单再修改。</p>
+      <table>
+        <thead><tr><th>名称</th><th>分类</th><th>大小</th><th>播放</th><th>日期</th><th>操作</th></tr></thead>
+        <tbody id="gameTable"></tbody>
+      </table>
+    </div>
+
+    <!-- 分类管理 -->
+    <div class="panel" id="tab-cat">
+      <h3>➕ 添加分类</h3>
+      <div class="form-row">
+        <input id="cat_name" placeholder="新分类名称（无数量上限）">
+        <button onclick="addCat()">➕ 添加分类</button>
+      </div>
+      <p class="hint">💡 删除分类时会自动清理该分类下的所有游戏。</p>
+      <table>
+        <thead><tr><th>分类名称</th><th>游戏数</th><th>操作</th></tr></thead>
+        <tbody id="catTable"></tbody>
+      </table>
+    </div>
+
+    <!-- 站点设置 -->
+    <div class="panel" id="tab-site">
+      <h3>⚙️ 站点信息</h3>
+      <div class="form-row"><input id="s_name" placeholder="站点名称"></div>
+      <div class="form-row"><input id="s_sub" placeholder="副标题"></div>
+      <div class="form-row"><input id="s_banner" placeholder="Banner主标题"></div>
+      <div class="form-row"><input id="s_announce" placeholder="公告/口号"></div>
+      <div class="form-row"><input id="s_beian" placeholder="备案号"></div>
+      <button onclick="saveSite()" style="padding:10px 18px;border:none;border-radius:8px;background:#6BCB77;cursor:pointer;font-weight:bold;">💾 保存设置</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "";
+let editingGameId = null;
+
+// ---- 鉴权 ----
+function check(){ return document.cookie.includes("session="+encodeURIComponent("liangge-session-secret")); }
+
+async function login(){
+  const r = await fetch(API+"/api/login",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({username:$("#user").value,password:$("#pass").value})});
+  if(r.ok){ location.reload(); } else { alert("账号或密码错误"); }
+}
+function logout(){ document.cookie="session=;max-age=0"; location.reload(); }
+
+// ---- 标签切换 ----
+function switchTab(name){
+  document.querySelectorAll(".tabs button").forEach((b,i)=>b.classList.toggle("active", ["game","cat","site"][i]===name));
+  ["game","cat","site"].forEach(n=>document.getElementById("tab-"+n).classList.toggle("show", n===name));
+  if(name==="cat")renderCats();
+}
+
+// ---- 加载统计 ----
+async function loadStats(){
+  const s = await (await fetch(API+"/api/stats")).json();
+  $("#statPv").textContent = s.pv||0; $("#statClicks").textContent = s.clicks||0;
+}
+
+// ---- 分类下拉 & 列表 ----
+async function loadCats(){
+  const data = await (await fetch(API+"/api/data")).json();
+  const cats = data.categories||[];
+  $("#g_cat").innerHTML = cats.map(c=>`<option>${c}</option>`).join("");
+  $("#statCats").textContent = cats.length;
+  $("#statGames").textContent = (data.games||[]).length;
+  renderCats();
+  renderGames(data.games||[]);
+}
+function renderCats(){
+  fetch(API+"/api/data").then(r=>r.json()).then(data=>{
+    const cats = data.categories||[], games = data.games||[];
+    $("#catTable").innerHTML = cats.map(c=>{
+      const cnt = games.filter(g=>g.cat===c).length;
+      return `<tr><td>${c}</td><td>${cnt}</td>
+        <td><span class="del-link" onclick="delCat('${c}')">🗑️ 删除</span></td></tr>`;
+    }).join("");
+  });
+}
+async function addCat(){
+  const name = ($("#cat_name").value||"").trim();
+  if(!name) return;
+  const r = await fetch(API+"/api/category/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name})});
+  if(r.ok){ $("#cat_name").value=""; loadCats(); } else { alert((await r.json()).error); }
+}
+async function delCat(name){
+  if(!confirm(`确定删除分类「${name}」？其下所有游戏也将被删除！`)) return;
+  await fetch(API+"/api/category/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name})});
+  loadCats();
+}
+
+// ---- 游戏 CRUD ----
+function renderGames(games){
+  $("#gameTable").innerHTML = games.map(g=>`
+    <tr>
+      <td>${g.icon||""} ${g.title}</td>
+      <td><span class="tag">${g.cat}</span></td>
+      <td>${g.size||"-"}</td>
+      <td>${g.plays||0}</td>
+      <td>${g.date||""}</td>
+      <td><span class="del-link" onclick="editGame('${g.id}')">✏️</span>
+          <span class="del-link" onclick="delGame('${g.id}')">🗑️</span></td>
+    </tr>`).join("");
+}
+async function saveGame(){
+  const body = {
+    title:$("#g_title").value, icon:$("#g_icon").value||"🎮",
+    cat:$("#g_cat").value, desc:$("#g_desc").value,
+    size:$("#g_size").value, date:$("#g_date").value, link:$("#g_link").value||"#",
+    tags:($("#g_tags").value||"").split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    plays: Number($("#g_plays").value)||0,
+  };
+  if(!body.title){ alert("请填写游戏名称"); return; }
+  if(editingGameId){ body.id = editingGameId;
+    await fetch(API+"/api/game/update",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  } else {
+    await fetch(API+"/api/game/add",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  }
+  editingGameId = null;
+  $("#g_title").value=""; $("#g_desc").value=""; $("#g_link").value="#"; $("#g_tags").value=""; $("#g_size").value=""; $("#g_date").value=""; $("#g_plays").value=0;
+  refreshAll();
+}
+async function editGame(id){
+  const data = await (await fetch(API+"/api/data")).json();
+  const g = data.games.find(x=>x.id===id);
+  if(!g) return;
+  editingGameId = id;
+  $("#g_title").value=g.title; $("#g_icon").value=g.icon||"🎮"; $("#g_cat").value=g.cat;
+  $("#g_desc").value=g.desc||""; $("#g_size").value=g.size||""; $("#g_date").value=g.date||"";
+  $("#g_link").value=g.link||"#"; $("#g_tags").value=(g.tags||[]).join(","); $("#g_plays").value=g.plays||0;
+}
+async function delGame(id){
+  if(!confirm("确定删除该游戏？")) return;
+  await fetch(API+"/api/game/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});
+  refreshAll();
+}
+async function refreshAll(){
+  const data = await (await fetch(API+"/api/data")).json();
+  renderGames(data.games||[]); $("#statGames").textContent=(data.games||[]).length;
+}
+
+// ---- 站点设置 ----
+async function loadSite(){
+  const data = await (await fetch(API+"/api/data")).json(); const s = data.settings||{};
+  $("#s_name").value=s.site_name||""; $("#s_sub").value=s.subtitle||""; $("#s_banner").value=s.banner_text||"";
+  $("#s_announce").value=s.announce||""; $("#s_beian").value=s.beian||"";
+}
+async function saveSite(){
+  const body = {site_name:$("#s_name").value, subtitle:$("#s_sub").value, banner_text:$("#s_banner").value,
+    announce:$("#s_announce").value, beian:$("#s_beian").value};
+  await fetch(API+"/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  alert("已保存，前台将自动更新");
+}
+
+// ---- 初始化 ----
+window.onload = () => {
+  if(!check()){ $("#loginView").style.display="block"; return; }
+  $("#loginView").style.display="none"; $("#adminView").style.display="block";
+  loadStats(); loadCats(); loadSite();
+};
+</script>
+</body>
+</html>
